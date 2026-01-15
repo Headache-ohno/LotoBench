@@ -8,9 +8,8 @@ LotoBench は、KYO's LOTO が配布している CSV データを元に、
 
 ---
 
-## 🌐 デモページ
-
-（GitHub Pages 公開後、ここにURLを書く）
+## 🌐 ページ
+https://headache-ohno.github.io/LotoBench/
 
 ---
 
@@ -99,3 +98,4 @@ LotoBench は、KYO's LOTO が配布している CSV ファイルを
 - Chart.js
 - PapaParse
 - 完全クライアントサイド動作（サーバー不要）
+
