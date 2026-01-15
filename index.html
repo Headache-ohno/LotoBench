@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LotoBench</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+        }
+        #all-numbers-stats-container {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100">
+
+    <div class="min-h-screen p-3 sm:p-6">
+      <div class="max-w-7xl mx-auto">
+        <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
+          <div class="flex flex-col sm:flex-row items-center justify-between mb-3 sm:mb-4 gap-4">
+            <div class="flex items-center gap-2 sm:gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+              <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">LotoBench</h1>
+            </div>
+            <div class="flex gap-2">
+              <button id="loto6-button" class="px-3 py-2 sm:px-4 sm:py-2 rounded-lg font-semibold transition bg-indigo-600 text-white">
+                ロト6
+              </button>
+              <button id="loto7-button" class="px-3 py-2 sm:px-4 sm:py-2 rounded-lg font-semibold transition bg-gray-200 text-gray-700 hover:bg-gray-300">
+                ロト7
+              </button>
+            </div>
+          </div>
+          
+          <p class="text-gray-600 mb-3 sm:mb-4 text-sm sm:text-base break-words">
+            KYO's LOTO様にて提供されているCSVデータをアップロードし、ブラウザ内で統計分析を行い、出現頻度の高い数字を予測することができます。
+           <br>
+           <a href="https://loto6.thekyo.jp/" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:underline">
+           KYO's LOTO6様のサイト</a>
+           <br>
+           <a href="https://loto7.thekyo.jp/" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:underline">
+           KYO's LOTO7様のサイト</a>
+           <br>
+          <p class="text-gray-600 mb-3 sm:mb-4 text-sm sm:text-base break-words">
+           (C)2026 Headache
+          </p>          
+
+          </div>
+
+       
+          <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 flex-wrap">
+            <label class="flex items-center gap-2 bg-blue-600 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg hover:bg-blue-700 transition cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+               CSVをアップロード
+              <input type="file" accept=".csv" id="file-upload" class="hidden" />
+            </label>
+            
+            <button id="sample-data-button" class="flex items-center gap-2 bg-green-600 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg hover:bg-green-700 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+              サンプルデータで試す
+            </button>
+          </div>
+
+          <div id="file-info" class="mt-3 sm:mt-4 flex items-center gap-2 text-xs sm:text-sm text-gray-600" style="display: none;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+            <span id="file-info-text"></span>
+          </div>
+        </div>
+
+        <div id="initial-view" class="bg-white rounded-lg shadow-lg p-6 sm:p-12 text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 mx-auto mb-3 sm:mb-4"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+            <h3 class="text-lg sm:text-xl font-semibold text-gray-700 mb-2">
+              データを読み込んでください
+            </h3>
+            <p class="text-gray-600 mb-2 sm:mb-4 text-sm sm:text-base">
+           　ダウンロードしたCSVファイルをアップロードしてください
+            </p>
+            <p class="text-xs sm:text-sm text-gray-500">
+              また、サンプルデータで機能を試すこともできます
+            </p>
+        </div>
+
+        <div id="prediction-area" style="display: none;">
+            <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
+              <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">
+                🎯 予測数字（統計ベース）
+              </h2>
+
+              <div class="flex gap-2 mb-4">
+                <button id="re-predict-button" class="px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold transition hover:bg-purple-700">
+                  再抽選する
+                </button>
+              </div>
+
+              <div id="predicted-numbers-container" class="flex gap-2 sm:gap-3 flex-wrap mb-3 sm:mb-4"></div>
+              <p id="prediction-info" class="text-xs sm:text-sm text-gray-600"></p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
+              <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6">
+                <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-3 sm:mb-4">
+                  📊 出現頻度TOP10（全期間）
+                </h2>
+                <div style="position: relative; height:200px">
+                  <canvas id="frequency-chart"></canvas>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6">
+                <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-3 sm:mb-4">
+                  🔥 ホットナンバー（直近20回）
+                </h2>
+                <div style="position: relative; height:200px">
+                  <canvas id="recent-trend-chart"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
+              <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-3 sm:mb-4">
+                ❄️ コールドナンバー（出現頻度が低い数字）
+              </h2>
+              <div id="low-frequency-numbers-container" class="grid grid-cols-5 sm:grid-cols-5 md:grid-cols-10 gap-2 sm:gap-3"></div>
+              <p class="text-xs sm:text-sm text-gray-600 mt-2 sm:mt-3">
+                ※ 出現頻度が低い数字は次回当選する可能性もあります
+              </p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6">
+              <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-3 sm:mb-4">
+                📈 全数字の詳細統計データ
+              </h2>
+              <div id="all-numbers-stats-container" class="grid grid-cols-3 sm:grid-cols-6 lg:grid-cols-8 gap-1 sm:gap-2"></div>
+            </div>
+
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 sm:p-4 mt-4 sm:mt-6">
+              <p class="text-xs sm:text-sm text-yellow-800">
+                ⚠️ 注意: ロトの抽選は完全にランダムです。このツールの予測は統計的な分析に基づいており、当選を保証するものではありません。参考程度にご活用ください。
+              </p>
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- グローバル変数 (State) ---
+            let lotoType = 'loto6';
+            let pastData = [];
+            let fileName = '';
+            let frequencyChartInstance = null;
+            let recentTrendChartInstance = null;
+
+            // --- DOM要素の取得 ---
+            const loto6Button = document.getElementById('loto6-button');
+            const loto7Button = document.getElementById('loto7-button');
+            const fileUploadInput = document.getElementById('file-upload');
+            const sampleDataButton = document.getElementById('sample-data-button');
+            const fileInfo = document.getElementById('file-info');
+            const fileInfoText = document.getElementById('file-info-text');
+            const initialView = document.getElementById('initial-view');
+            const predictionArea = document.getElementById('prediction-area');
+            const predictedNumbersContainer = document.getElementById('predicted-numbers-container');
+            const predictionInfo = document.getElementById('prediction-info');
+            const lowFrequencyNumbersContainer = document.getElementById('low-frequency-numbers-container');
+            const allNumbersStatsContainer = document.getElementById('all-numbers-stats-container');
+            const rePredictButton = document.getElementById('re-predict-button');
+
+            // --- イベントリスナー ---
+            loto6Button.addEventListener('click', () => switchLotoType('loto6'));
+            loto7Button.addEventListener('click', () => switchLotoType('loto7'));
+            fileUploadInput.addEventListener('change', handleFileUpload);
+            sampleDataButton.addEventListener('click', generateSampleData);
+            rePredictButton.addEventListener('click', () => {
+                renderPredictedNumbers();
+            });
+
+            // --- 関数 ---
+            function switchLotoType(type) {
+                lotoType = type;
+                pastData = [];
+                fileName = '';
+                
+                if (type === 'loto6') {
+                    loto6Button.classList.add('bg-indigo-600', 'text-white');
+                    loto6Button.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                    loto7Button.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                    loto7Button.classList.remove('bg-indigo-600', 'text-white');
+                } else {
+                    loto7Button.classList.add('bg-indigo-600', 'text-white');
+                    loto7Button.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                    loto6Button.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                    loto6Button.classList.remove('bg-indigo-600', 'text-white');
+                }
+                updateUI();
+            }
+
+            function handleFileUpload(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                fileName = file.name;
+                Papa.parse(file, {
+                    encoding: 'Shift_JIS',
+                    complete: (results) => {
+                        try {
+                            const draws = [];
+                            const data = results.data;
+                            for (let i = 1; i < data.length; i++) {
+                                const row = data[i];
+                                if (!row || row.length < 3) continue;
+                                const drawNumber = parseInt(row[0]);
+                                const date = row[1];
+                                if (!drawNumber || !date) continue;
+                                const numbers = [];
+                                const pickCount = lotoType === 'loto6' ? 6 : 7;
+                                for (let j = 2; j < row.length && numbers.length < pickCount; j++) {
+                                    const num = parseInt(row[j]);
+                                    if (num && !isNaN(num) && num > 0) {
+                                        numbers.push(num);
+                                    }
+                                }
+                                if (numbers.length === pickCount) {
+                                    draws.push({
+                                        drawNumber: drawNumber,
+                                        numbers: numbers.sort((a, b) => a - b),
+                                        date: date
+                                    });
+                                }
+                            }
+                            if (draws.length > 0) {
+                                pastData = draws.reverse();
+                                alert(`${draws.length}回分のデータを読み込みました`);
+                                updateUI();
+                            } else {
+                                alert(`データの読み込みに失敗しました。\n${lotoType === 'loto6' ? 'ロト6' : 'ロト7'}用のCSVを選択してください。`);
+                                pastData = [];
+                                fileName = '';
+                                updateUI();
+                            }
+                        } catch (error) {
+                            console.error(error);
+                            alert('ファイルの解析に失敗しました');
+                        }
+                    },
+                    error: (error) => {
+                        console.error(error);
+                        alert('ファイルの読み込みに失敗しました');
+                    }
+                });
+            }
+
+            function generateSampleData() {
+                const maxNum = lotoType === 'loto6' ? 43 : 37;
+                const pickCount = lotoType === 'loto6' ? 6 : 7;
+                const draws = [];
+                for (let i = 0; i < 100; i++) {
+                    const numbers = new Set();
+                    while (numbers.size < pickCount) {
+                        const num = Math.floor(Math.random() * maxNum) + 1;
+                        numbers.add(num);
+                    }
+                    draws.push({
+                        drawNumber: 1800 - i,
+                        numbers: Array.from(numbers).sort((a, b) => a - b),
+                        date: new Date(Date.now() - i * 7 * 24 * 60 * 60 * 1000).toLocaleDateString('ja-JP')
+                    });
+                }
+                pastData = draws;
+                fileName = 'サンプルデータ';
+                updateUI();
+            }
+
+            function getFrequencyData() {
+                if (pastData.length === 0) return [];
+                const maxNum = lotoType === 'loto6' ? 43 : 37;
+                const freq = {};
+                for (let i = 1; i <= maxNum; i++) freq[i] = 0;
+                pastData.forEach(draw => draw.numbers.forEach(num => {
+                    if (num >= 1 && num <= maxNum) freq[num]++;
+                }));
+                return Object.entries(freq)
+                    .map(([num, count]) => ({
+                        number: parseInt(num),
+                        count: count,
+                        percentage: ((count / pastData.length) * 100).toFixed(1)
+                    }))
+                    .sort((a, b) => b.count - a.count);
+            }
+
+            function getPredictedNumbers(frequencyData) {
+                if (frequencyData.length === 0) return [];
+                const pickCount = lotoType === 'loto6' ? 6 : 7;
+                const weighted = [];
+                frequencyData.forEach(item => {
+                    const weight = Math.max(1, Math.floor(item.count * 1.5));
+                    for (let i = 0; i < weight; i++) weighted.push(item.number);
+                });
+                pastData.slice(0, 10).forEach(draw => {
+                    draw.numbers.forEach(num => {
+                        weighted.push(num, num);
+                    });
+                });
+                const selected = new Set();
+                let attempts = 0;
+                while (selected.size < pickCount && attempts < 1000) {
+                    const randomIndex = Math.floor(Math.random() * weighted.length);
+                    selected.add(weighted[randomIndex]);
+                    attempts++;
+                }
+                return Array.from(selected).sort((a, b) => a - b);
+            }
+
+            function getRecentTrend() {
+                if (pastData.length === 0) return [];
+                const recent = pastData.slice(0, 20);
+                const maxNum = lotoType === 'loto6' ? 43 : 37;
+                const freq = {};
+                for (let i = 1; i <= maxNum; i++) freq[i] = 0;
+                recent.forEach(draw => draw.numbers.forEach(num => {
+                    if (num >= 1 && num <= maxNum) freq[num]++;
+                }));
+                return Object.entries(freq)
+                    .map(([num, count]) => ({ number: parseInt(num), count: count }))
+                    .filter(item => item.count > 0)
+                    .sort((a, b) => b.count - a.count);
+            }
+
+            function renderPredictedNumbers() {
+                const frequencyData = getFrequencyData();
+                const predictedNumbers = getPredictedNumbers(frequencyData);
+                predictedNumbersContainer.innerHTML = '';
+                predictedNumbers.forEach(num => {
+                    const div = document.createElement('div');
+                    div.className = "w-12 h-12 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xl md:text-2xl font-bold shadow-lg transform hover:scale-110 transition";
+                    div.textContent = num;
+                    predictedNumbersContainer.appendChild(div);
+                });
+                predictionInfo.textContent = `※ 過去${pastData.length}回の抽選データから出現頻度と最近の傾向を分析して予測`;
+            }
+
+            function updateUI() {
+                if (pastData.length === 0) {
+                    initialView.style.display = 'block';
+                    predictionArea.style.display = 'none';
+                    fileInfo.style.display = 'none';
+                    return;
+                }
+                initialView.style.display = 'none';
+                predictionArea.style.display = 'block';
+                fileInfo.style.display = 'flex';
+                fileInfoText.textContent = `読み込み済み: ${fileName} (${pastData.length}回分)`;
+                renderPredictedNumbers();
+                const frequencyData = getFrequencyData();
+                const recentTrend = getRecentTrend();
+                const lowFrequencyNumbers = frequencyData.slice(-10).reverse();
+
+                // 出現頻度グラフ描画
+                const top10Freq = frequencyData.slice(0, 10);
+                const freqCtx = document.getElementById('frequency-chart').getContext('2d');
+                if (frequencyChartInstance) frequencyChartInstance.destroy();
+                frequencyChartInstance = new Chart(freqCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: top10Freq.map(d => d.number),
+                        datasets: [{
+                            label: '出現回数',
+                            data: top10Freq.map(d => d.count),
+                            backgroundColor: '#6366f1',
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+
+                // ホットナンバーグラフ描画
+                const top10Recent = recentTrend.slice(0, 10);
+                const recentCtx = document.getElementById('recent-trend-chart').getContext('2d');
+                if (recentTrendChartInstance) recentTrendChartInstance.destroy();
+                recentTrendChartInstance = new Chart(recentCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: top10Recent.map(d => d.number),
+                        datasets: [{
+                            label: '出現回数',
+                            data: top10Recent.map(d => d.count),
+                            backgroundColor: '#10b981',
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+
+                // コールドナンバー描画
+                lowFrequencyNumbersContainer.innerHTML = '';
+                lowFrequencyNumbers.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = "p-2 sm:p-3 bg-blue-50 rounded-lg text-center border border-blue-200";
+                    div.innerHTML = `
+                        <div class="text-base sm:text-xl font-bold text-blue-600">${item.number}</div>
+                        <div class="text-xs text-gray-600">${item.count}回</div>
+                    `;
+                    lowFrequencyNumbersContainer.appendChild(div);
+                });
+
+                // 全数字統計描画
+                allNumbersStatsContainer.innerHTML = '';
+                frequencyData.sort((a,b) => a.number - b.number).forEach(item => {
+                    const predictedNumbers = getPredictedNumbers(frequencyData); // 再抽選の反映用
+                    const isPredicted = predictedNumbersContainer.textContent.includes(String(item.number));
+                    const bgColor = isPredicted ? 'bg-indigo-100 border-indigo-400' : 'bg-gray-50 border-gray-200';
+                    const textColor = isPredicted ? 'text-indigo-600' : 'text-gray-700';
+                    const div = document.createElement('div');
+                    div.className = `p-2 sm:p-3 rounded-lg border transition hover:shadow-md ${bgColor}`;
+                    div.innerHTML = `
+                        <div class="text-xl md:text-2xl font-bold ${textColor}">${item.number}</div>
+                        <div class="text-sm text-gray-600">${item.count}回</div>
+                        <div class="text-xs text-gray-500">${item.percentage}%</div>
+                    `;
+                    allNumbersStatsContainer.appendChild(div);
+                });
+            }
+
+        });
+    </script>
+</body>
+</html>
