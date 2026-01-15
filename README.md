@@ -50,11 +50,14 @@ LotoBench は、KYO's LOTO が配布している CSV ファイルを
 
 ---
 
-## 📊 データの出典
+## 📊 出典
 
-- KYO's LOTO  
-  https://www.kyos-loto.jp/
-
+- thekyo.jp 様  
+  https://thekyo.jp/
+- KYO's Loto6 様
+  https://loto6.thekyo.jp/
+- KYO7s Loto7 様
+  https://loto7.thekyo.jp/
 ---
 
 ## ⚠️ 免責事項
@@ -80,7 +83,7 @@ LotoBench は、KYO's LOTO が配布している CSV ファイルを
 
 それ以外の方が利用したい場合は、作者までご連絡ください。
 
-詳細は `LICENSE` ファイルをご覧ください。
+詳細につきましては `LICENSE` ファイルをご覧ください。
 
 ---
 
@@ -98,4 +101,5 @@ LotoBench は、KYO's LOTO が配布している CSV ファイルを
 - Chart.js
 - PapaParse
 - 完全クライアントサイド動作（サーバー不要）
+
 
