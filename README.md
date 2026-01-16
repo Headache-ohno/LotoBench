@@ -52,7 +52,7 @@ LotoBench は、KYO's LOTO が配布している CSV ファイルを
 
 ## 📊 出典
 
-- thekyo.jp 様  
+- thekyo.jp 様
   https://thekyo.jp/
 - KYO's Loto6 様 
   https://loto6.thekyo.jp/
@@ -101,6 +101,7 @@ LotoBench は、KYO's LOTO が配布している CSV ファイルを
 - Chart.js
 - PapaParse
 - 完全クライアントサイド動作（サーバー不要）
+
 
 
 
